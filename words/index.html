@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>단어 모음</title>
+<meta name="description" content="읽고 듣다 만난 낯선 말을 모아 둔 단어장">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Myeongjo:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../style.css">
+<style>
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 10px}
+.search{flex:1 1 280px;min-width:0;display:flex;align-items:center;gap:8px;background:var(--sheet);
+  border:1px solid var(--rule);border-radius:8px;padding:0 12px}
+.search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search svg{flex:none;color:var(--ink-2)}
+.search input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;padding:11px 0;outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.chip{font:inherit;cursor:pointer;border:1px solid var(--rule);background:var(--sheet);color:var(--ink-2);border-radius:999px;padding:5px 12px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip .n{font-family:var(--f-mono);font-size:11px;margin-left:4px;opacity:.75}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cards{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:0 18px}
+.entry{border-bottom:1px solid var(--rule)}
+.entry:last-child{border-bottom:0}
+.entry summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:16px 0}
+.entry summary::-webkit-details-marker{display:none}
+.entry summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.term{font-family:var(--f-display);font-weight:800;font-size:19px;line-height:1.35}
+.reading{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);margin-left:8px}
+.cat{align-self:start;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:1px 7px;white-space:nowrap}
+.gist{grid-column:1/-1;color:var(--ink-2);font-size:14px}
+.entry[open] .gist{display:none}
+.e-body{padding:0 0 18px;display:grid;gap:10px;max-width:72ch}
+.e-def{font-size:15px}
+.e-meta{font-size:13px;color:var(--ink-2);display:grid;gap:2px}
+.e-meta a{color:var(--accent);text-underline-offset:3px;overflow-wrap:anywhere}
+.e-memo{background:var(--accent-soft);border-radius:6px;padding:10px 12px;font-size:14px}
+.e-memo b{display:block;font-size:11.5px;letter-spacing:.06em;color:var(--accent);margin-bottom:2px}
+.e-fig{margin:0;display:grid;gap:6px}
+.e-fig img{display:block;width:100%;max-width:560px;height:auto;border-radius:6px;border:1px solid var(--rule);background:var(--paper)}
+.e-fig figcaption{font-size:12px;color:var(--ink-2)}
+.e-fig figcaption a{color:inherit}
+mark{background:var(--mark);color:inherit;border-radius:2px}
+.empty{padding:40px 8px;text-align:center;color:var(--ink-2)}
+@media (max-width:640px){.reading{display:block;margin:2px 0 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">← 처음으로</a></nav>
+  <header class="top">
+    <div class="brand">
+      <small>Words I Met</small>
+      <h1>단어 모음</h1>
+    </div>
+    <div class="count" id="count"></div>
+  </header>
+  <p class="lede">읽고 듣다가 마음에 걸린 말을 모아 둡니다. 항목을 누르면 뜻과 메모가 열립니다.</p>
+
+  <div class="tools">
+    <label class="search" for="q">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="단어·원어·뜻으로 찾기" autocomplete="off">
+    </label>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="분류"></div>
+  <div class="cards" id="cards"></div>
+  <footer class="foot">마지막 정리 ’26.10.19.</footer>
+</div>
+
+<script>
+const TERMS=[
+  {term:"하브루타",reading:"Havruta / Chavruta (아람어·히브리어 '우정, 동반자')",category:"교육",
+   aliases:["Havruta","Chavruta","짝 토론 학습","질문 토론 수업"],
+   definition:"두 사람이 짝을 지어 같은 텍스트를 읽고 서로 질문하며 토론하는 유대인의 전통 학습법. 본래 탈무드를 공부하는 방식으로, 한 사람이 해석을 내놓으면 짝이 반문하고 근거를 따져 묻는 과정을 반복해 내용을 깊이 이해한다. 정답을 외우기보다 '왜 그렇게 생각하는가'를 말로 설명하게 하는 것이 핵심이다.",
+   memo:"예시바(유대교 학교)의 도서관은 짝끼리 크게 토론하느라 시끄럽다는 것으로 알려져 있음. 우리나라에서는 질문·토론 중심 수업을 가리키는 말로 널리 쓰이며, 가정에서 부모와 아이가 책을 읽고 서로 묻고 답하는 '하브루타 대화'로도 소개됨.",
+   image:{src:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Havruta.jpg/960px-Havruta.jpg",w:960,h:676,
+     alt:"두 학생이 탁자에 마주 앉아 한 권의 책을 함께 들여다보며 공부하는 흑백 사진",
+     caption:"예시바에서 짝을 지어 공부하는 모습",credit:"Simonpor, CC BY-SA 3.0 (Wikimedia Commons)",
+     creditUrl:"https://commons.wikimedia.org/wiki/File:Havruta.jpg"}}
+];
+
+const $=s=>document.querySelector(s);
+let cat="전체", query="";
+const open=new Set();
+const norm=s=>(s||"").toLowerCase().replace(/\s+/g,"");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hl(s){const safe=esc(s),q=esc(query.trim());return q?safe.split(q).join("<mark>"+q+"</mark>"):safe}
+function matches(t){
+  if(cat!=="전체"&&t.category!==cat) return false;
+  if(!query) return true;
+  const q=norm(query);
+  return [t.term,t.reading,t.definition,t.memo,(t.aliases||[]).join(" "),t.source].some(f=>norm(f).includes(q));
+}
+function render(){
+  const counts={}; TERMS.forEach(t=>counts[t.category]=(counts[t.category]||0)+1);
+  const cats=Object.keys(counts).sort((a,b)=>a.localeCompare(b,"ko"));
+  $("#chips").innerHTML=["전체",...cats].map(c=>
+    `<button type="button" class="chip" data-cat="${esc(c)}" aria-pressed="${c===cat}">${esc(c)}<span class="n">${c==="전체"?TERMS.length:counts[c]}</span></button>`).join("");
+  const shown=TERMS.filter(matches).sort((a,b)=>a.term.localeCompare(b.term,"ko"));
+  $("#count").textContent=`${TERMS.length}개 단어`+(shown.length!==TERMS.length?` · ${shown.length}개 표시`:"");
+  if(!shown.length){$("#cards").innerHTML=`<div class="empty">“${esc(query)}”에 맞는 단어가 없습니다.</div>`;return}
+  $("#cards").innerHTML=shown.map(t=>{
+    const al=t.aliases||[];
+    const src=t.sourceUrl?`<a href="${esc(t.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(t.source||"원문 보기")} ↗</a>`:esc(t.source||"");
+    return `<details class="entry" data-id="${esc(t.term)}" ${open.has(t.term)||query?"open":""}>
+      <summary><span><span class="term">${hl(t.term)}</span>${t.reading?`<span class="reading">${hl(t.reading)}</span>`:""}</span>
+        <span class="cat">${esc(t.category)}</span>
+        <span class="gist">${hl(t.definition.length>80?t.definition.slice(0,80)+"…":t.definition)}</span></summary>
+      <div class="e-body">
+        <div class="e-def">${hl(t.definition)}</div>
+        ${t.image?`<figure class="e-fig"><img src="${esc(t.image.src)}" alt="${esc(t.image.alt||t.term)}" loading="lazy" width="${t.image.w||960}" height="${t.image.h||640}"><figcaption>${esc(t.image.caption||"")}${t.image.credit?` · 사진: ${t.image.creditUrl?`<a href="${esc(t.image.creditUrl)}" target="_blank" rel="noopener noreferrer">${esc(t.image.credit)}</a>`:esc(t.image.credit)}`:""}</figcaption></figure>`:""}
+        ${t.memo?`<div class="e-memo"><b>메모 · 예문</b>${hl(t.memo)}</div>`:""}
+        ${(al.length||src)?`<div class="e-meta">${al.length?`<span>다른 이름: ${hl(al.join(", "))}</span>`:""}${src?`<span>근거: ${src}</span>`:""}</div>`:""}
+      </div></details>`}).join("");
+}
+$("#q").addEventListener("input",e=>{query=e.target.value;render()});
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){cat=b.dataset.cat;render()}});
+$("#cards").addEventListener("toggle",e=>{const d=e.target;if(d.dataset?.id){d.open?open.add(d.dataset.id):open.delete(d.dataset.id)}},true);
+render();
+</script>
+</body>
+</html>
