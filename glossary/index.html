@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>업무용어 노트</title>
+<meta name="description" content="일하면서 만난 낯선 용어의 뜻을 정리한 노트">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Myeongjo:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../style.css">
+<style>
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 10px}
+.search{flex:1 1 280px;min-width:0;display:flex;align-items:center;gap:8px;background:var(--sheet);
+  border:1px solid var(--rule);border-radius:8px;padding:0 12px}
+.search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search svg{flex:none;color:var(--ink-2)}
+.search input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;padding:11px 0;outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.chip{font:inherit;cursor:pointer;border:1px solid var(--rule);background:var(--sheet);color:var(--ink-2);border-radius:999px;padding:5px 12px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip .n{font-family:var(--f-mono);font-size:11px;margin-left:4px;opacity:.75}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cards{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:0 18px}
+.entry{border-bottom:1px solid var(--rule)}
+.entry:last-child{border-bottom:0}
+.entry summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:16px 0}
+.entry summary::-webkit-details-marker{display:none}
+.entry summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.term{font-family:var(--f-display);font-weight:800;font-size:19px;line-height:1.35}
+.reading{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);margin-left:8px}
+.cat{align-self:start;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:1px 7px;white-space:nowrap}
+.gist{grid-column:1/-1;color:var(--ink-2);font-size:14px}
+.entry[open] .gist{display:none}
+.e-body{padding:0 0 18px;display:grid;gap:10px;max-width:72ch}
+.e-def{font-size:15px}
+.e-meta{font-size:13px;color:var(--ink-2);display:grid;gap:2px}
+.e-meta a{color:var(--accent);text-underline-offset:3px;overflow-wrap:anywhere}
+mark{background:var(--mark);color:inherit;border-radius:2px}
+.empty{padding:40px 8px;text-align:center;color:var(--ink-2)}
+@media (max-width:640px){.reading{display:block;margin:2px 0 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">← 처음으로</a></nav>
+  <header class="top">
+    <div class="brand">
+      <small>Working Glossary</small>
+      <h1>업무용어 노트</h1>
+    </div>
+    <div class="count" id="count"></div>
+  </header>
+  <p class="lede">일하면서 만난 낯선 말의 뜻을 정리해 둡니다. 항목을 누르면 자세한 설명이 열립니다.</p>
+
+  <div class="tools">
+    <label class="search" for="q">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="용어·약어·풀이로 찾기" autocomplete="off">
+    </label>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="분류"></div>
+  <div class="cards" id="cards"></div>
+  <footer class="foot">마지막 정리 ’26.10.18.</footer>
+</div>
+
+<script>
+const TERMS=[
+  {term:"ICP-RIE",reading:"Inductively Coupled Plasma – Reactive Ion Etching (유도결합 플라즈마 반응성 이온 식각)",category:"연구장비",
+   aliases:["ICP 식각기","건식 식각 장비"],
+   definition:"반도체 공정에서 웨이퍼 위의 막을 패턴대로 깎아 내는 건식 식각 장비. 가스를 플라즈마로 만들어 그 이온으로 깎기 때문에 수직으로 미세하게 가공할 수 있다. 플라즈마를 만드는 전원과 이온을 끌어당기는 전원을 따로 조절해 식각 속도는 높이고 표면 손상은 줄인다."},
+  {term:"IP",reading:"Intellectual Property (지식재산)",category:"기술사업화",
+   aliases:["지식재산","지식재산권","특허","IP 포트폴리오","설계 IP"],
+   definition:"연구 성과 가운데 법적 권리로 보호받아 거래·사용 허락할 수 있는 것. 특허(출원→심사→등록, 등록 후 연차 유지비), 실용신안·디자인·상표, SW 저작권·반도체 배치설계권, 노하우(영업비밀)가 있다. 기술사업화는 연구 → IP 확보 → 기술이전·창업 → 기술료 수입으로 이어지며, IP는 이 흐름에서 거래되는 대상이다."},
+  {term:"실용신안",reading:"Utility Model",category:"기술사업화",
+   aliases:["고안","Utility Model","산업재산권"],
+   definition:"물품의 형상·구조·조합을 실용적으로 개선한 '고안'을 보호하는 지식재산권. 특허보다 기술 수준 요건이 낮고 비용·심사 부담이 작으며, 보호 기간은 출원일부터 10년(특허는 20년). 제조 방법·화학 물질·소프트웨어는 대상이 아니다. 실용신안으로 출원했다가 특허로 바꾸는 변경출원도 가능하다.",
+   source:"실용신안법"},
+  {term:"SMK",reading:"Small Marketing Kit (스몰 마케팅 키트)",category:"기술사업화",
+   aliases:["Small Marketing Kit","스몰 마케팅 키트","기술 홍보 자료","동영상 SMK"],
+   definition:"기관이 보유한 기술을 기업에 소개하려고 한두 장 분량으로 요약한 기술 홍보 자료. 기술 개요, 핵심 특징과 기존 기술 대비 장점, 활용 분야, 관련 특허 현황, 문의처를 담는다. 논문이나 특허 명세서를 기업 담당자 눈높이에서 '이 기술로 무엇을 할 수 있나' 중심으로 다시 쓴 영업용 자료다."},
+  {term:"MPW Tape-out",reading:"Multi-Project Wafer Tape-out (다중 프로젝트 웨이퍼 테이프아웃)",category:"연구장비",
+   aliases:["MPW","테이프아웃","Tape-out","MPW 셔틀","다중 프로젝트 웨이퍼"],
+   definition:"여러 기관·팀의 칩 설계를 마스크 세트와 웨이퍼 한 장에 나눠 싣는 방식(MPW)으로, 설계를 마친 최종 데이터(GDS)를 파운드리에 넘겨 시제품 칩 제작에 들어가는 것. 제작비를 나눠 내므로 대학·연구실·스타트업이 적은 비용으로 설계를 검증하거나 교육용 칩을 만들 때 쓴다."},
+  {term:"RPA",reading:"Robotic Process Automation (로봇 프로세스 자동화)",category:"디지털·AX",
+   aliases:["로봇 프로세스 자동화","업무 자동화","IPA"],
+   definition:"사람이 PC에서 반복하는 정형 업무(클릭, 복사·붙여넣기, 시스템 입력, 엑셀 정리, 메일 발송 등)를 소프트웨어 로봇이 대신 처리하게 하는 기술. 기존 시스템을 고치지 않고 화면 위에서 사람처럼 움직여 빠르게 도입할 수 있지만, 판단이 필요한 일은 못 하고 대상 화면이 바뀌면 멈춘다."},
+  {term:"텍스코어",reading:"TeX-Corps (Tech eXploration-Corps) — 공공기술 기반 시장연계 창업탐색 지원사업",category:"기술사업화",
+   aliases:["TeX-Corps","Tex-corps","한국형 아이코어","I-Corps","창업탐색","공공기술 기반 시장연계 창업탐색 지원사업"],
+   definition:"대학·출연연의 연구 성과를 창업으로 잇기 전에, 연구자·대학원생으로 꾸린 실험실 창업탐색팀이 잠재 고객을 직접 인터뷰해 시장 수요를 검증하도록 돕는 과기정통부 사업. 미국 NSF의 I-Corps 모델을 본떠 '한국형 아이코어'로도 불렸으며, 고객 검증 교육·멘토링·시제품(MVP) 제작·해외 시장 탐색을 지원한다.",
+   source:"머니투데이방송 ’26.3.18. 「GIST, ‘텍스코어’ 주관기관 선정」",sourceUrl:"https://news.mtn.co.kr/news-detail/2026031820515869397"},
+  {term:"MVP",reading:"Minimum Viable Product (최소 기능 제품)",category:"기술사업화",
+   aliases:["최소 기능 제품","최소 실행 가능 제품","시제품","프로토타입","Minimum Viable Product"],
+   definition:"고객이 실제로 써 볼 수 있는 가장 단순한 형태의 제품. 완성품을 다 만들기 전에 핵심 기능 하나만 갖춰 빨리 내놓고, 고객 반응으로 '이 문제를 이렇게 푸는 게 맞나, 돈을 낼 의향이 있나'를 검증한 뒤 고쳐 다시 내놓는 반복(만들기→측정→학습)의 출발점이다. 「린 스타트업」에서 널리 퍼진 개념이다."},
+  {term:"USC",reading:"University of Southern California (서던캘리포니아대학교)",category:"해외 대학·기관",
+   aliases:["서던캘리포니아대학교","서던캘리포니아대"],
+   definition:"미국 로스앤젤레스의 사립 연구중심대학. 1880년 개교했고, 살아 있는 동문이 50만 명이 넘는다.",
+   source:"연합뉴스 ’26.3.31. 「美 USC 첫 한인 총장」",sourceUrl:"https://www.yna.co.kr/view/AKR20260330122500371"}
+];
+
+const $=s=>document.querySelector(s);
+let cat="전체", query="";
+const open=new Set();
+const norm=s=>(s||"").toLowerCase().replace(/\s+/g,"");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hl(s){const safe=esc(s),q=esc(query.trim());return q?safe.split(q).join("<mark>"+q+"</mark>"):safe}
+function matches(t){
+  if(cat!=="전체"&&t.category!==cat) return false;
+  if(!query) return true;
+  const q=norm(query);
+  return [t.term,t.reading,t.definition,(t.aliases||[]).join(" "),t.source].some(f=>norm(f).includes(q));
+}
+function render(){
+  const counts={}; TERMS.forEach(t=>counts[t.category]=(counts[t.category]||0)+1);
+  const cats=Object.keys(counts).sort((a,b)=>a.localeCompare(b,"ko"));
+  $("#chips").innerHTML=["전체",...cats].map(c=>
+    `<button type="button" class="chip" data-cat="${esc(c)}" aria-pressed="${c===cat}">${esc(c)}<span class="n">${c==="전체"?TERMS.length:counts[c]}</span></button>`).join("");
+  const shown=TERMS.filter(matches).sort((a,b)=>a.term.localeCompare(b.term,"ko"));
+  $("#count").textContent=`${TERMS.length}개 용어`+(shown.length!==TERMS.length?` · ${shown.length}개 표시`:"");
+  if(!shown.length){$("#cards").innerHTML=`<div class="empty">“${esc(query)}”에 맞는 용어가 없습니다.</div>`;return}
+  $("#cards").innerHTML=shown.map(t=>{
+    const al=t.aliases||[];
+    const src=t.sourceUrl?`<a href="${esc(t.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(t.source||"원문 보기")} ↗</a>`:esc(t.source||"");
+    return `<details class="entry" data-id="${esc(t.term)}" ${open.has(t.term)||query?"open":""}>
+      <summary><span><span class="term">${hl(t.term)}</span>${t.reading?`<span class="reading">${hl(t.reading)}</span>`:""}</span>
+        <span class="cat">${esc(t.category)}</span>
+        <span class="gist">${hl(t.definition.length>80?t.definition.slice(0,80)+"…":t.definition)}</span></summary>
+      <div class="e-body">
+        <div class="e-def">${hl(t.definition)}</div>
+        ${(al.length||src)?`<div class="e-meta">${al.length?`<span>다른 이름: ${hl(al.join(", "))}</span>`:""}${src?`<span>근거: ${src}</span>`:""}</div>`:""}
+      </div></details>`}).join("");
+}
+$("#q").addEventListener("input",e=>{query=e.target.value;render()});
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){cat=b.dataset.cat;render()}});
+$("#cards").addEventListener("toggle",e=>{const d=e.target;if(d.dataset?.id){d.open?open.add(d.dataset.id):open.delete(d.dataset.id)}},true);
+render();
+</script>
+</body>
+</html>
